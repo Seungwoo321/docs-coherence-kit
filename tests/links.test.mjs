@@ -271,12 +271,19 @@ describe('links 축 — 자기 문서 가정의 기각', () => {
     const [discredited] = byCode(result, 'links.discredited-self');
     assert.ok(discredited);
     assert.equal(discredited.severity, 'info');
-    assert.equal(discredited.payload.self_hits, 1, '§1 은 실재해 가정이 맞았다');
+    assert.equal(discredited.payload.self_hits, 2, '§1 참조 둘은 실재해 가정이 맞았다');
     assert.deepEqual(discredited.payload.sections, ['6', '7', '8']);
     assert.deepEqual(
       discredited.locations.map((location) => location.line),
       [7, 9, 11],
     );
+  });
+
+  test('여는 괄호가 이름과 절 사이를 끊으면 외부 인용이 아니라 자기 문서 가정이다', () => {
+    // "정원은 20(§1 기준)" — 괄호 밖의 20 은 수치이지 문서명이 아니다. § 는 괄호 주석의
+    // 시작이라 자기 문서 가정으로 남고, §1 이 실재해 hit 으로 잡힌다.
+    const result = run('selfref.config.json');
+    assert.equal(byCode(result, 'links.external-section').length, 0, '20 을 외부 문서명으로 오인하지 않는다');
   });
 
   test('어긋남이 소수면 가정이 유효해 건별 경고를 유지한다', () => {

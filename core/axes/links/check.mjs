@@ -430,7 +430,9 @@ function resolveSectionTarget(raw, line, matchIndex, document, resolvedLinks, in
   // 코퍼스의 어떤 이름과도 붙지 않는데 바로 앞이 숫자 품은 라틴 이름이면 외부 문서 인용이다
   // ("arc42 §10" · "ISO 42010 §6.2"). 자기 문서로 대조하면 남의 절 번호를 이 문서에 없다고
   // 지적하게 된다 — "대상을 모른다"는 "대상이 이 문서다"가 아니다.
-  const stripped = before.replace(/[\s의,([「'"]*$/u, '');
+  // 여는 괄호·따옴표는 벗기지 않는다: "합계 58(§5.1)" 처럼 괄호가 이름과 § 사이를 끊으면
+  // § 는 괄호 주석의 시작이지 그 이름의 절이 아니다 — 자기 문서 가정으로 남긴다.
+  const stripped = before.replace(/[\s의,]*$/u, '');
   const foreign = FOREIGN_NAME_RE.exec(stripped);
   if (foreign && /\d/.test(foreign[1])) {
     return { document: null, via: 'external', name: foreign[1] };
