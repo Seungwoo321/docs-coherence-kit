@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  문서 집합이 스스로와 어긋나지 않는지 검사하는 Claude 플러그인.
+  문서 집합이 스스로와 어긋나지 않는지 검사하는 에이전트 킷 — Claude Code 플러그인이자 오픈 표준(SKILL.md) 스킬 세트.
 </p>
 
 ---
@@ -28,15 +28,15 @@
 축은 세 종류다.
 
 - **script** — 정규식·파싱·산술로 끝난다. 재현 가능하고 토큰을 쓰지 않는다.
-- **judgment** — 사람 언어의 의미를 읽어야 판정된다. 계약 문서(`contract.md`)를 읽은 서브에이전트가 맡는다.
+- **judgment** — 사람 언어의 의미를 읽어야 판정된다. 계약 문서(`contract.md`)를 읽은 격리 판정자가 맡는다.
 - **hybrid** — 스크립트가 후보를 좁히고, 계약이 그 후보만 확정한다.
 
 ## 3단계로 나눠 도는 이유
 
 ```
-/coherence  (커맨드 — 순서와 게이트만 소유)
+dck-coherence  (오케스트레이션 — 순서와 게이트만 소유. Claude 는 /coherence, Codex 는 $dck-coherence 로 진입)
    ├─ 1. dck-scan   결정적 축 실행                  → scan.json
-   ├─ 2. dck-judge  계약 축 서브에이전트 팬아웃      → verdicts/<축>.json
+   ├─ 2. dck-judge  계약 축 격리 팬아웃              → verdicts/<축>.json
    └─ 3. dck-merge  전수 대조·중복 접기·통과 판정    → report.json · report.md
 ```
 
@@ -55,9 +55,21 @@
 /plugin install docs-coherence-kit@dck
 ```
 
-마켓플레이스 이름은 `dck`, 플러그인 이름은 `docs-coherence-kit` 이다. 설치하면 `/coherence` 커맨드와 `dck-scan` · `dck-judge` · `dck-merge` 스킬이 함께 들어온다.
+마켓플레이스 이름은 `dck`, 플러그인 이름은 `docs-coherence-kit` 이다. 설치하면 `/coherence` 커맨드와 `dck-coherence` · `dck-scan` · `dck-judge` · `dck-merge` 스킬이 함께 들어온다.
 
 Node.js 20 이상이면 되고, 런타임 의존성은 없다. 설치 후 별도 빌드나 `install` 단계가 없다.
+
+### Codex CLI 에서
+
+스킬 4종은 [오픈 에이전트 스킬 표준](https://agentskills.io)(SKILL.md) 형식이라 Codex 에서도 그대로 돈다. 킷을 받아 Codex 의 스킬 탐색 경로에 링크한다.
+
+```bash
+git clone https://github.com/Seungwoo321/docs-coherence-kit.git ~/docs-coherence-kit
+mkdir -p ~/.agents/skills
+ln -s ~/docs-coherence-kit/skills/dck-* ~/.agents/skills/
+```
+
+유저 전역(`~/.agents/skills`) 대신 검사할 레포의 `.agents/skills/` 에 걸면 그 레포에서만 보인다. 실행은 `$dck-coherence` 를 부르거나 "문서 정합성 검사해줘" 로 충분하다 — 오케스트레이션·게이트·격리 실행 규율은 스킬 문서가 소유하므로 에이전트가 달라도 절차는 같다. 판정 축의 격리 수단만 환경에 따라 갈린다(Claude Code = 병렬 서브에이전트, Codex = `codex exec` 자식 실행 — `skills/dck-judge/SKILL.md`).
 
 ## 데모 — 심어 둔 결함 8건 잡기
 
@@ -135,9 +147,11 @@ node core/merge.mjs --config examples/bluebird-docs/dck.config.json --run-id dem
 ## 실행
 
 ```
-/coherence                          # 전체 검사
+/coherence                          # 전체 검사 (Claude Code)
 /coherence --axes numbers,links     # 축 선택
 /coherence --waive links.display-variant
+
+$dck-coherence                      # Codex CLI — 같은 인자를 그대로 붙인다
 ```
 
 `--axes` 로 고른 축 밖의 축은 목록에서 사라지지 않고 사유와 함께 skipped 로 남는다. `--waive` 는 명시적 강등이고 리포트에 적용 건수가 찍힌다 — `coverage.*` 강등은 거부된다.
@@ -225,14 +239,15 @@ skipped 는 fail 이 아니지만 pass 도 아니다. 축 표에 그대로 보�
 
 축 스크립트는 `--config` · `--repo` 를 받아 stdout 으로 스캔 봉투 JSON 을 쓰고, 정상 완주면 0 을 반환한다. `core/lib/` 의 config · corpus · markdown · findings 를 그대로 쓰면 검사 범위·제외 사유·줄 번호 처리가 코어와 같아진다. 형식 정본은 [`schemas/manifest.schema.json`](schemas/manifest.schema.json).
 
-계약(`contract.md`)은 판정 기준을 사람 언어로 적은 문서다. 무엇이 위반이고 무엇이 정상인지, 어떤 입력을 보는지를 여기에 적는다 — 서브에이전트는 이 문서만 읽고 판정한다.
+계약(`contract.md`)은 판정 기준을 사람 언어로 적은 문서다. 무엇이 위반이고 무엇이 정상인지, 어떤 입력을 보는지를 여기에 적는다 — 판정자는 이 문서만 읽고 판정한다.
 
 ## 레포 구조
 
 ```
-.claude-plugin/              # 플러그인 · 마켓플레이스 매니페스트
-commands/coherence.md        # 오케스트레이션 커맨드
-skills/dck-{scan,judge,merge}/SKILL.md
+.claude-plugin/              # 플러그인 · 마켓플레이스 매니페스트 (Claude Code)
+.agents/skills/              # 스킬 심링크 — Codex 등 오픈 표준 탐색 경로
+commands/coherence.md        # /coherence 진입점 (dck-coherence 스킬로 위임)
+skills/dck-{coherence,scan,judge,merge}/SKILL.md
 core/manifest.json           # 코어 축 등록
 core/lib/*.mjs               # config · manifest · markdown · findings · corpus
 core/axes/<축>/              # check.mjs · contract.md

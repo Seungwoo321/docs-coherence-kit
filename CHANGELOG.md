@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-08
+
+### Added
+
+- Codex CLI 지원 — 스킬이 오픈 에이전트 스킬 표준([agentskills.io](https://agentskills.io)) 탐색 경로 `.agents/skills/` 로도 노출되고(심링크), README 에 Codex 설치·실행 절이 붙는다
+- `dck-coherence` 오케스트레이션 스킬 — `/coherence` 커맨드가 소유하던 순서·게이트·보고 절차가 스킬로 승격돼 에이전트와 무관하게 재사용된다
+
+### Changed
+
+- `/coherence` 커맨드는 `dck-coherence` 스킬로 위임하는 얇은 진입점이 된다
+- dck-judge 판정자 격리 규율의 환경 중립화 — 격리 요건은 그대로 두고, 수단을 환경이 가진 것으로 매핑한다(병렬 서브에이전트 또는 `codex exec` 헤드리스 자식 실행)
+
 ## [1.1.0] - 2026-08-08
 
 ### Added
@@ -43,6 +55,7 @@
 - 자기완결 SVG 로고 (`assets/`) — 외부 폰트·이미지 참조 없이 라이트/다크에 대응한다
 - 합성 픽스처 기반 `node:test` 스위트 (`tests/`)
 
-[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Seungwoo321/docs-coherence-kit/releases/tag/v1.0.0
