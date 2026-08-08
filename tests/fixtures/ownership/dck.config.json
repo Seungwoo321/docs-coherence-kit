@@ -1,0 +1,9 @@
+{
+  "docs": {
+    "root": "docs"
+  },
+  "ownership": [
+    { "what": "범위 표 수치", "owner": "scope-table.md" },
+    { "what": "전환 게이트 판정 규칙", "owner": "rules/transition-gate.md", "hint": "게이트 통과 조건 전문" }
+  ]
+}

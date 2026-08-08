@@ -1,0 +1,11 @@
+{
+  "schema": "bluebird/decision-cards@1",
+  "note": "결정 카드 목록. 본문은 decisions/accepted.md 가 소유하고 여기에는 요약 메타만 둔다.",
+  "decisions": [
+    { "id": "ADR-001", "status": "accepted", "body": "accepted.md" },
+    { "id": "ADR-002", "status": "accepted", "body": "accepted.md" },
+    { "id": "ADR-003", "status": "accepted", "body": "accepted.md" },
+    { "id": "ADR-005", "status": "superseded by ADR-006", "body": "accepted.md" },
+    { "id": "ADR-006", "status": "accepted", "body": "accepted.md" }
+  ]
+}

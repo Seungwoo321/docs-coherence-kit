@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Seungwoo321/docs-coherence-kit/schemas/manifest.schema.json",
+  "title": "축 매니페스트",
+  "description": "core/manifest.json 과 plugins/<name>/manifest.json 이 같은 형식을 쓴다. 축 이름은 병합 후 전역 유일해야 한다.",
+  "type": "object",
+  "required": ["axes"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "axes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/axis" }
+    }
+  },
+  "$defs": {
+    "axis": {
+      "type": "object",
+      "required": ["name", "kind", "run"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "전역 유일한 축 이름. findings code 네임스페이스가 된다.",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "title": { "type": "string", "description": "사람이 읽는 축 이름." },
+        "kind": {
+          "enum": ["script", "judgment", "hybrid"],
+          "description": "script = 결정 전용, judgment = 계약 전용, hybrid = 스크립트가 후보를 내고 계약이 확정."
+        },
+        "run": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "script": { "type": "string", "description": "매니페스트 파일 기준 상대 경로." },
+            "contract": { "type": "string", "description": "매니페스트 파일 기준 상대 경로." }
+          }
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "requires": {
+              "type": "array",
+              "description": "config 최상위 키 목록. 하나라도 비어 있으면 축은 skipped 로 사유와 함께 보고된다.",
+              "items": { "type": "string" },
+              "default": []
+            }
+          }
+        },
+        "severity_cap": {
+          "enum": ["block", "warn", "info"],
+          "description": "이 축이 낼 수 있는 최대 심각도.",
+          "default": "block"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "script" } }, "required": ["kind"] },
+          "then": { "properties": { "run": { "required": ["script"] } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "judgment" } }, "required": ["kind"] },
+          "then": { "properties": { "run": { "required": ["contract"] } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "hybrid" } }, "required": ["kind"] },
+          "then": { "properties": { "run": { "required": ["script", "contract"] } } }
+        }
+      ]
+    }
+  }
+}

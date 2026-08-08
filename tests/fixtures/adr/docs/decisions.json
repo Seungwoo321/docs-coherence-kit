@@ -1,0 +1,14 @@
+{
+  "schema": "dck-fixture/decisions-cards@1",
+  "note": "카드 뷰 매니페스트. 본문은 decisions/accepted.md 가 소유하고 여기에는 요약 메타만 둔다.",
+  "decisions": [
+    { "id": "ADR-001", "status": "accepted", "body": "accepted.md" },
+    { "id": "ADR-002", "status": "draft", "body": "accepted.md" },
+    { "id": "ADR-003", "status": "superseded by ADR-004", "body": "accepted.md" },
+    { "id": "ADR-004", "status": "accepted", "body": "accepted.md" },
+    { "id": "ADR-005", "status": "superseded by ADR-006", "body": "accepted.md" },
+    { "id": "ADR-006", "status": "superseded by ADR-005", "body": "accepted.md" },
+    { "id": "ADR-009", "status": "superseded by ADR-099", "body": "accepted.md" },
+    { "id": "ADR-077", "status": "accepted", "body": "accepted.md" }
+  ]
+}

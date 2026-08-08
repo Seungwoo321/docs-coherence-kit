@@ -1,0 +1,17 @@
+{
+  "docs": {
+    "root": "docs",
+    "manifest": "docs/index.json",
+    "include": ["**/*.md"],
+    "exclude": ["notes/**"],
+    "frozen": ["decisions/accepted.md"]
+  },
+  "ownership": [
+    { "what": "용어 정의", "owner": "glossary.md" },
+    { "what": "범위 표 수치", "owner": "scope-table.md" }
+  ],
+  "concepts": ["타일", "기능블록", "호스트"],
+  "numbers": {
+    "labels": ["등록 타일", "1차 전환"]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "docs": { "root": "docs" },
+  "numbers": {
+    "marker_pattern": "<!--\\s*num:([\\w.-]+)\\s*=\\s*(\\d+)\\s*-->"
+  }
+}

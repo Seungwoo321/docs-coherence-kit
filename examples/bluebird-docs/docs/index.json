@@ -1,0 +1,14 @@
+{
+  "schema": "bluebird/docs@1",
+  "note": "포털 설계 문서 목록. 문서 사이의 링크는 여기 적힌 id 를 #design/<id> 로 가리킨다.",
+  "docs": [
+    { "id": "glossary", "title": "용어집", "file": "glossary.md" },
+    { "id": "scope-table", "title": "현행 실측", "file": "scope-table.md" },
+    { "id": "runtime-layers", "title": "층 구조", "file": "runtime-layers.md" },
+    { "id": "wiring-spec", "title": "조립 계약", "file": "wiring-spec.md" },
+    { "id": "field-spec", "title": "산출 계약", "file": "field-spec.md" },
+    { "id": "phase-notes", "title": "전환 계획", "file": "phase-notes.md" },
+    { "id": "gate-policy", "title": "검증 전략", "file": "gate-policy.md" },
+    { "id": "decisions", "title": "결정 기록", "file": "decisions/accepted.md" }
+  ]
+}

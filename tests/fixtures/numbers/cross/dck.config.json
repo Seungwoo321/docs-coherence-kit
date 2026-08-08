@@ -1,0 +1,6 @@
+{
+  "docs": { "root": "docs" },
+  "numbers": {
+    "labels": ["1차 전환 대상"]
+  }
+}

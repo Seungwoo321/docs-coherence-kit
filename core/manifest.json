@@ -1,0 +1,37 @@
+{
+  "$schema": "../schemas/manifest.schema.json",
+  "axes": [
+    {
+      "name": "numbers",
+      "title": "수치 교차",
+      "kind": "script",
+      "run": { "script": "axes/numbers/check.mjs" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "ownership",
+      "title": "소유 중복",
+      "kind": "hybrid",
+      "run": { "script": "axes/ownership/check.mjs", "contract": "axes/ownership/contract.md" },
+      "when": { "requires": ["ownership"] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "concepts",
+      "title": "개념·용어",
+      "kind": "hybrid",
+      "run": { "script": "axes/concepts/check.mjs", "contract": "axes/concepts/contract.md" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "links",
+      "title": "링크·앵커",
+      "kind": "script",
+      "run": { "script": "axes/links/check.mjs" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    }
+  ]
+}

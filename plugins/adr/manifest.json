@@ -1,0 +1,13 @@
+{
+  "$schema": "../../schemas/manifest.schema.json",
+  "axes": [
+    {
+      "name": "decisions",
+      "title": "결정 반영",
+      "kind": "hybrid",
+      "run": { "script": "axes/decisions/check.mjs", "contract": "axes/decisions/contract.md" },
+      "when": { "requires": ["adr"] },
+      "severity_cap": "block"
+    }
+  ]
+}

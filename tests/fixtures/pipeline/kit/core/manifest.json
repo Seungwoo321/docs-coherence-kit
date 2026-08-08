@@ -1,0 +1,52 @@
+{
+  "axes": [
+    {
+      "name": "alpha",
+      "title": "결정 축",
+      "kind": "script",
+      "run": { "script": "axes/alpha/check.mjs" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "beta",
+      "title": "혼합 축",
+      "kind": "hybrid",
+      "run": { "script": "axes/beta/check.mjs", "contract": "axes/beta/contract.md" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "gamma",
+      "title": "판단 축",
+      "kind": "judgment",
+      "run": { "contract": "axes/gamma/contract.md" },
+      "when": { "requires": [] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "capped",
+      "title": "상한 축",
+      "kind": "script",
+      "run": { "script": "axes/capped/check.mjs" },
+      "when": { "requires": [] },
+      "severity_cap": "warn"
+    },
+    {
+      "name": "delta",
+      "title": "선언이 있어야 도는 축",
+      "kind": "script",
+      "run": { "script": "axes/delta/check.mjs" },
+      "when": { "requires": ["delta"] },
+      "severity_cap": "block"
+    },
+    {
+      "name": "broken",
+      "title": "깨지는 축",
+      "kind": "script",
+      "run": { "script": "axes/broken/check.mjs" },
+      "when": { "requires": ["broken"] },
+      "severity_cap": "block"
+    }
+  ]
+}

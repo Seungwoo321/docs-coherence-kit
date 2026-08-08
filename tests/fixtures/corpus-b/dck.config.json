@@ -1,0 +1,8 @@
+{
+  "docs": {
+    "root": "handbook"
+  },
+  "ownership": [{ "what": "규칙 정의", "owner": "rules.md" }],
+  "concepts": ["규칙", "예외"],
+  "out": "build/dck"
+}

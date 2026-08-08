@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bluebird.example/schema/tile.json",
+  "title": "타일 산출물",
+  "description": "전환 도구가 타일 하나마다 내놓는 기록. 필드의 뜻은 docs/field-spec.md 가 소유한다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "sourceFiles", "assembly"],
+  "properties": {
+    "id": { "type": "string", "description": "레지스트리 키." },
+    "title": { "type": "string", "description": "화면에 보이는 이름." },
+    "sourceFiles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "그 타일을 이루는 원본 파일 목록."
+    },
+    "usedByTiles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "이 타일을 다시 쓰는 다른 타일."
+    },
+    "usedByBlocks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "이 타일을 부르는 기능블록."
+    },
+    "assembly": { "type": "string", "description": "호스트가 이 타일을 놓을 슬롯 이름." },
+    "ownerPackage": { "type": "string", "description": "이 타일을 내보내는 배포단위." }
+  }
+}

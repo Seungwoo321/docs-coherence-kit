@@ -1,0 +1,10 @@
+{
+  "axes": [
+    {
+      "name": "numbers",
+      "title": "다른 매니페스트가 같은 이름을 등록한다",
+      "kind": "script",
+      "run": { "script": "axes/numbers/check.mjs" }
+    }
+  ]
+}

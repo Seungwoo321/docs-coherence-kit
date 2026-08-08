@@ -1,0 +1,22 @@
+{
+  "docs": { "root": "docs" },
+  "measurements": [
+    {
+      "label": "타일",
+      "cmd": "node tools/count-tiles.mjs",
+      "expect_in": ["scope-table.md"]
+    },
+    {
+      "label": "라우트",
+      "cmd": "node tools/count-routes.mjs"
+    },
+    {
+      "label": "아이콘",
+      "cmd": "node tools/count-tiles.mjs"
+    },
+    {
+      "label": "호스트 표면",
+      "cmd": "node tools/does-not-exist.mjs"
+    }
+  ]
+}

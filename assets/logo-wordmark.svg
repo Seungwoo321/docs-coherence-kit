@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 64" width="420" height="64" role="img" aria-label="docs coherence kit">
+  <title>docs coherence kit</title>
+  <style>
+    svg { --ink: #0f172a; --accent: #4f46e5; }
+    @media (prefers-color-scheme: dark) {
+      svg { --ink: #e2e8f0; --accent: #a5b4fc; }
+    }
+  </style>
+
+  <!-- 마크 -->
+  <g fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round">
+    <rect x="4" y="15" width="16" height="34" rx="3.5" />
+    <rect x="24" y="9" width="16" height="46" rx="3.5" />
+    <rect x="44" y="15" width="16" height="34" rx="3.5" />
+  </g>
+  <path d="M12,32 L52,32" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+  <circle cx="12" cy="32" r="3.6" fill="var(--accent)" />
+  <circle cx="52" cy="32" r="3.6" fill="var(--accent)" />
+  <circle cx="32" cy="32" r="5.4" fill="var(--accent)" />
+
+  <!-- 워드마크. 폰트에 기대지 않도록 글자를 단선 획으로 그린다. -->
+  <g transform="translate(84 19)" fill="none" stroke="var(--ink)" stroke-width="2.75"
+     stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(0 0)">
+      <circle cx="9" cy="17" r="9" />
+      <path d="M18,0 L18,26" />
+    </g>
+    <g transform="translate(22 0)">
+      <circle cx="9" cy="17" r="9" />
+    </g>
+    <g transform="translate(44 0)">
+      <path d="M15.36,10.64 A9,9 0 1 0 15.36,23.36" />
+    </g>
+    <g transform="translate(65 0)">
+      <path d="M15,11.8 C15,8.9 12.4,7.5 9,7.5 C5.6,7.5 3,9 3,11.6 C3,17.4 15,15.2 15,20.9 C15,23.8 12.2,25.5 8.7,25.5 C5.4,25.5 2.9,24.2 2.3,21.6" />
+    </g>
+
+    <g transform="translate(94 0)">
+      <path d="M15.36,10.64 A9,9 0 1 0 15.36,23.36" />
+    </g>
+    <g transform="translate(115 0)">
+      <circle cx="9" cy="17" r="9" />
+    </g>
+    <g transform="translate(137 0)">
+      <path d="M2,0 L2,26" />
+      <path d="M2,15.5 A7.5,7.5 0 0 1 17,15.5 L17,26" />
+    </g>
+    <g transform="translate(158 0)">
+      <path d="M0,17 L18,17 A9,9 0 1 0 14.79,23.89" />
+    </g>
+    <g transform="translate(180 0)">
+      <path d="M2,8 L2,26" />
+      <path d="M2,15.5 C2,10.8 5.4,7.6 10.4,7.6" />
+    </g>
+    <g transform="translate(194 0)">
+      <path d="M0,17 L18,17 A9,9 0 1 0 14.79,23.89" />
+    </g>
+    <g transform="translate(216 0)">
+      <path d="M2,8 L2,26" />
+      <path d="M2,15.5 A7.5,7.5 0 0 1 17,15.5 L17,26" />
+    </g>
+    <g transform="translate(237 0)">
+      <path d="M15.36,10.64 A9,9 0 1 0 15.36,23.36" />
+    </g>
+    <g transform="translate(258 0)">
+      <path d="M0,17 L18,17 A9,9 0 1 0 14.79,23.89" />
+    </g>
+
+    <g transform="translate(289 0)">
+      <path d="M2,0 L2,26" />
+      <path d="M15,8.5 L3.5,19" />
+      <path d="M8,15.2 L15.6,26" />
+    </g>
+    <g transform="translate(308 0)">
+      <path d="M2,8 L2,26" />
+      <circle cx="2" cy="3" r="1.6" fill="var(--ink)" stroke="none" />
+    </g>
+    <g transform="translate(315 0)">
+      <path d="M5,1.5 L5,21 C5,24.6 7.4,26.6 10.8,25.8" />
+      <path d="M0.5,8.5 L10.5,8.5" />
+    </g>
+  </g>
+</svg>

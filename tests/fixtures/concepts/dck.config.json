@@ -1,0 +1,7 @@
+{
+  "docs": {
+    "root": "docs"
+  },
+  "concepts": ["층 구조", "widgets-shared", "fence-only-name"],
+  "schemas": ["schema/field-spec.schema.json"]
+}

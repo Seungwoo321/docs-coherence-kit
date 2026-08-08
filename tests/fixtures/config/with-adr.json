@@ -1,0 +1,10 @@
+{
+  "docs": {
+    "root": "../corpus-a/docs"
+  },
+  "plugins": ["adr"],
+  "adr": {
+    "bodies": "decisions/accepted.md",
+    "id_pattern": "ADR-\\d{3}"
+  }
+}

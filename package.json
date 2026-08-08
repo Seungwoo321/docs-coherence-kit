@@ -1,0 +1,41 @@
+{
+  "name": "docs-coherence-kit",
+  "version": "1.0.0",
+  "description": "마크다운 문서 집합의 정합성을 검사한다 — 수치·소유·개념·링크 코어 4축에 집합 고유 축을 플러그인으로 더한다. 검사하지 않은 것은 통과로 보고하지 않는다.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "Seungwoo321 (https://github.com/Seungwoo321)",
+  "homepage": "https://github.com/Seungwoo321/docs-coherence-kit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Seungwoo321/docs-coherence-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Seungwoo321/docs-coherence-kit/issues"
+  },
+  "keywords": [
+    "documentation",
+    "markdown",
+    "consistency",
+    "coherence",
+    "docs-drift",
+    "quality-gate"
+  ],
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\""
+  },
+  "files": [
+    ".claude-plugin",
+    "commands",
+    "skills",
+    "core",
+    "plugins",
+    "schemas",
+    "assets"
+  ]
+}

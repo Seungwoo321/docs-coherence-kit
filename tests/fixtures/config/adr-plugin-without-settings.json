@@ -1,0 +1,6 @@
+{
+  "docs": {
+    "root": "../corpus-a/docs"
+  },
+  "plugins": ["adr"]
+}

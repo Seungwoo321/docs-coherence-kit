@@ -1,0 +1,8 @@
+{
+  "docs": {
+    "root": "docs",
+    "manifest": "docs/index.json",
+    "include": ["**/*.md"],
+    "frozen": ["decisions/accepted.md"]
+  }
+}

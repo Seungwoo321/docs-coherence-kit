@@ -1,0 +1,6 @@
+{
+  "docs": {
+    "root": "enum",
+    "manifest": "enum/index.json"
+  }
+}

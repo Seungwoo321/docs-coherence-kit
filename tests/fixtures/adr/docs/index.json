@@ -1,0 +1,10 @@
+{
+  "schema": "dck-fixture/docs@1",
+  "docs": [
+    { "id": "glossary", "title": "용어집", "file": "glossary.md" },
+    { "id": "field-spec", "title": "필드 규격", "file": "field-spec.md" },
+    { "id": "gate-policy", "title": "게이트 정책", "file": "gate-policy.md" },
+    { "id": "legacy-note", "title": "옛 메모", "file": "legacy-note.md" },
+    { "id": "decisions", "title": "결정 기록", "file": "decisions/accepted.md" }
+  ]
+}

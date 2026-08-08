@@ -1,0 +1,7 @@
+{
+  "schema": "dck-fixture/docs@1",
+  "docs": [
+    { "id": "gate-policy", "title": "게이트 정책", "file": "gate-policy.md" },
+    { "id": "decisions", "title": "결정 기록", "file": "decisions/accepted.md" }
+  ]
+}

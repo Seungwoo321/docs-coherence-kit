@@ -1,0 +1,7 @@
+{
+  "docs": [
+    { "id": "doc/glossary", "path": "glossary.md", "title": "용어집" },
+    { "id": "doc/architecture", "path": "architecture.md", "title": "아키텍처" },
+    { "id": "doc/access-policy", "path": "access-policy.md", "title": "ACL" }
+  ]
+}

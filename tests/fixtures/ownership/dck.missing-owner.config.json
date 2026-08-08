@@ -1,0 +1,7 @@
+{
+  "docs": {
+    "root": "docs",
+    "include": ["scope-table.md"]
+  },
+  "ownership": [{ "what": "호스트 계약 표면", "owner": "wiring-spec.md" }]
+}

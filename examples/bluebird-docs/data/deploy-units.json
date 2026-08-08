@@ -1,0 +1,8 @@
+[
+  { "id": "portal-host", "title": "포털 호스트", "kind": "host" },
+  { "id": "booking", "title": "예약 흐름", "kind": "remote" },
+  { "id": "authoring", "title": "편집 흐름", "kind": "remote" },
+  { "id": "rooms", "title": "회의실 마스터", "kind": "remote" },
+  { "id": "widgets", "title": "공유 표시 요소", "kind": "remote" },
+  { "id": "legacy-bridge", "title": "옛 화면 다리", "kind": "remote" }
+]

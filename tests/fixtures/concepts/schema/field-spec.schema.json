@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "필드 규격",
+  "type": "object",
+  "required": ["id", "derivedFrom"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "derivedFrom": {
+      "type": "array",
+      "description": "조각이 나온 원본 코드 경로.",
+      "items": { "type": "string" }
+    },
+    "authorNote": { "type": "string" },
+    "usedByTiles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "usedByBlocks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

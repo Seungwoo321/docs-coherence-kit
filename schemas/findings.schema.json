@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Seungwoo321/docs-coherence-kit/schemas/findings.schema.json",
+  "title": "findings 봉투",
+  "description": "모든 축이 같은 형식으로 결과를 낸다. 루트는 개별 finding, 축 스크립트의 stdout 형식은 $defs/scanResult 다.",
+  "$ref": "#/$defs/finding",
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["axis", "severity", "code", "message", "locations"],
+      "additionalProperties": false,
+      "properties": {
+        "axis": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "severity": {
+          "enum": ["block", "warn", "info"]
+        },
+        "code": {
+          "type": "string",
+          "description": "<axis>.<kebab> 네임스페이스. coverage.* 는 병합기가 주입한다.",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*\\.[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/location" }
+        },
+        "payload": {
+          "type": "object",
+          "description": "축별 자유 필드. 각 축이 자기 판정에 필요한 출력 필드를 여기 담는다."
+        },
+        "found_by": {
+          "type": "array",
+          "description": "중복 접기로 합쳐진 원 축 목록. 병합기가 채운다.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "required": ["file"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "line": { "type": "integer", "minimum": 1 },
+        "quote": { "type": "string" }
+      }
+    },
+    "exclusion": {
+      "type": "object",
+      "description": "검사 범위에서 빠진 항목. 무엇을 왜 뺐는지 항상 함께 남는다.",
+      "required": ["path", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "scanResult": {
+      "type": "object",
+      "description": "축 스크립트가 stdout 에 내는 JSON 한 덩어리.",
+      "required": ["axis", "findings", "stats"],
+      "additionalProperties": false,
+      "properties": {
+        "axis": { "type": "string" },
+        "findings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/finding" }
+        },
+        "candidates": {
+          "type": "array",
+          "description": "hybrid 축이 판단 계약에 넘기는 후보.",
+          "items": { "type": "object" }
+        },
+        "stats": {
+          "type": "object",
+          "required": ["files_scanned", "excluded", "skipped"],
+          "additionalProperties": true,
+          "properties": {
+            "files_scanned": { "type": "integer", "minimum": 0 },
+            "excluded": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/exclusion" }
+            },
+            "skipped": {
+              "type": "boolean",
+              "description": "when.requires 미충족으로 축이 돌지 않았는가."
+            },
+            "skip_reason": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

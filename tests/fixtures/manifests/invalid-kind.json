@@ -1,0 +1,10 @@
+{
+  "axes": [
+    {
+      "name": "Bad_Name",
+      "kind": "prompt",
+      "run": { "contract": "axes/bad/contract.md" },
+      "cadence": "always"
+    }
+  ]
+}

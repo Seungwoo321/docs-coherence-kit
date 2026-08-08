@@ -1,0 +1,18 @@
+{
+  "docs": {
+    "root": "docs",
+    "manifest": "docs/index.json",
+    "include": ["**/*.md"],
+    "frozen": ["decisions/accepted.md", "legacy-note.md"]
+  },
+  "ownership": [
+    { "what": "게이트 축·임계·판정 규칙", "owner": "gate-policy.md" },
+    { "what": "용어 정의", "owner": "glossary.md" }
+  ],
+  "plugins": ["adr"],
+  "adr": {
+    "bodies": "decisions/accepted.md",
+    "cards": "decisions.json",
+    "id_pattern": "ADR-\\d{3}"
+  }
+}

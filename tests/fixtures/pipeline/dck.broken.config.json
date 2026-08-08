@@ -1,0 +1,5 @@
+{
+  "docs": { "root": "docs" },
+  "out": ".dck",
+  "broken": { "on": true }
+}

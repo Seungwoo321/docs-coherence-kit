@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Seungwoo321/docs-coherence-kit/schemas/config.schema.json",
+  "title": "dck.config.json",
+  "description": "소비 레포 루트에 두는 선언 파일. 검사 대상·소유 표·핵심 개념·실측 명령을 코드 수정 없이 여기서만 지정한다.",
+  "type": "object",
+  "required": ["docs"],
+  "comment": "여기 열거되지 않은 최상위 키는 플러그인이 소유한다. 축의 when.requires 가 그 키를 가리키고, 키가 없으면 축은 skipped 로 보고된다.",
+  "patternProperties": {
+    "^[a-z][a-z0-9]*(_[a-z0-9]+)*$": true
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "docs": {
+      "type": "object",
+      "description": "검사 대상 문서 집합.",
+      "required": ["root"],
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "type": "string",
+          "description": "검사 대상 루트 디렉토리 (레포 루트 기준 상대 경로)."
+        },
+        "manifest": {
+          "type": "string",
+          "description": "문서 매니페스트 파일 경로. 링크 축이 내부 문서 id 집합을 여기서 얻는다."
+        },
+        "include": {
+          "type": "array",
+          "description": "root 기준 include 글롭.",
+          "items": { "type": "string" },
+          "default": ["**/*.md"]
+        },
+        "exclude": {
+          "type": "array",
+          "description": "root 기준 exclude 글롭. 제외된 파일은 사유와 함께 산출에 남는다.",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "frozen": {
+          "type": "array",
+          "description": "소급 편집 금지 문서. 드리프트 검사 대상에서 빠지되 링크 대상으로는 여전히 해석된다.",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "out": {
+      "type": "string",
+      "description": "산출 디렉토리. run-id 별 하위 디렉토리가 여기 생긴다.",
+      "default": ".dck"
+    },
+    "ownership": {
+      "type": "array",
+      "description": "ownership 축 입력 — 무엇을 어느 문서가 소유하는가.",
+      "items": {
+        "type": "object",
+        "required": ["what", "owner"],
+        "additionalProperties": false,
+        "properties": {
+          "what": { "type": "string", "description": "소유 대상의 이름." },
+          "owner": { "type": "string", "description": "소유 문서 경로 (docs.root 기준)." },
+          "hint": { "type": "string", "description": "소유 대상을 좁히는 자유 서술." }
+        }
+      }
+    },
+    "numbers": {
+      "type": "object",
+      "description": "numbers 축 설정.",
+      "additionalProperties": false,
+      "properties": {
+        "marker_pattern": {
+          "type": "string",
+          "description": "산문 수치 마커 정규식. 캡처 그룹 1 = 라벨, 2 = 값."
+        },
+        "labels": {
+          "type": "array",
+          "description": "문서 간 교차 대조할 라벨 선언.",
+          "items": { "type": "string" }
+        },
+        "total_row_labels": {
+          "type": "array",
+          "description": "표 산술 검사에서 합계 행으로 볼 라벨.",
+          "items": { "type": "string" },
+          "default": ["합계", "총계", "계", "total", "Total"]
+        }
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "description": "numbers 축의 데이터 대조 — 문서 수치 라벨을 실측 명령에 묶는다.",
+      "items": {
+        "type": "object",
+        "required": ["label", "cmd"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "cmd": { "type": "string", "description": "레포 루트에서 실행할 명령. stdout 마지막 줄이 실측값." },
+          "expect_in": {
+            "type": "array",
+            "description": "이 수치가 등장해야 할 문서.",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "description": "concepts 축이 추적할 개념.",
+      "items": { "type": "string" }
+    },
+    "schemas": {
+      "type": "array",
+      "description": "concepts 축의 필드명 실재 대조에 쓰는 스키마 파일.",
+      "items": { "type": "string" }
+    },
+    "reuse_gates": {
+      "type": "array",
+      "description": "이미 존재하는 결정적 검사. 재구현하지 않고 호출한다.",
+      "items": { "type": "string" }
+    },
+    "plugins": {
+      "type": "array",
+      "description": "활성화할 플러그인 이름. plugins/<name>/manifest.json 을 읽는다.",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "adr": {
+      "type": "object",
+      "description": "adr 플러그인이 더하는 decisions 축 설정. 이 키가 없으면 decisions 축은 skipped 로 보고된다.",
+      "required": ["bodies"],
+      "properties": {
+        "bodies": {
+          "type": "string",
+          "description": "결정 본문 파일. docs.root 기준 경로가 없으면 레포 루트 기준으로 찾는다."
+        },
+        "cards": { "type": "string", "description": "결정 카드(매니페스트) 파일." },
+        "id_pattern": { "type": "string", "default": "ADR-\\d{3}" },
+        "status_field": {
+          "type": "string",
+          "default": "상태",
+          "description": "결정 상태를 적는 항목 이름."
+        },
+        "decision_field": {
+          "type": "string",
+          "default": "결정",
+          "description": "결정문을 적는 항목 이름. 이 항목의 링크만 지목 대상으로 본다."
+        }
+      }
+    }
+  }
+}

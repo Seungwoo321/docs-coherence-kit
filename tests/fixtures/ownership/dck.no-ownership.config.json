@@ -1,0 +1,6 @@
+{
+  "docs": {
+    "root": "docs"
+  },
+  "concepts": ["전환 게이트"]
+}

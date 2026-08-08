@@ -1,0 +1,15 @@
+{
+  "docs": {
+    "root": "out-of-scope",
+    "manifest": "out-of-scope/index.json",
+    "include": ["**/*.md"],
+    "exclude": ["issues/**"],
+    "frozen": ["decisions/accepted.md"]
+  },
+  "ownership": [{ "what": "게이트 축·임계·판정 규칙", "owner": "gate-policy.md" }],
+  "plugins": ["adr"],
+  "adr": {
+    "bodies": "decisions/accepted.md",
+    "id_pattern": "ADR-\\d{3}"
+  }
+}

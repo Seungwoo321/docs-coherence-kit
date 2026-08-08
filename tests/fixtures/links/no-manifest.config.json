@@ -1,0 +1,7 @@
+{
+  "docs": {
+    "root": "docs",
+    "include": ["**/*.md"],
+    "frozen": ["decisions/accepted.md"]
+  }
+}

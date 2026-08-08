@@ -1,0 +1,18 @@
+{
+  "axes": [
+    {
+      "name": "numbers",
+      "title": "수치 교차",
+      "kind": "script",
+      "run": { "script": "axes/numbers/check.mjs" },
+      "when": { "requires": [] }
+    },
+    {
+      "name": "ownership",
+      "title": "소유 중복",
+      "kind": "hybrid",
+      "run": { "script": "axes/ownership/check.mjs", "contract": "axes/ownership/contract.md" },
+      "when": { "requires": ["ownership"] }
+    }
+  ]
+}
