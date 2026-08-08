@@ -45,6 +45,12 @@
           "description": "소급 편집 금지 문서. 드리프트 검사 대상에서 빠지되 링크 대상으로는 여전히 해석된다.",
           "items": { "type": "string" },
           "default": []
+        },
+        "routes": {
+          "type": "array",
+          "description": "문서를 싣는 사이트의 해시 라우트 이름. `#<이름>` 링크가 같은 문서의 헤딩이 아니라 사이트 화면(목차 등)을 가리킬 때 여기 선언한다 — 선언된 이름은 헤딩 앵커로 대조하지 않는다. `#<ns>/<id>` 는 매니페스트가 답하므로 여기 적지 않는다.",
+          "items": { "type": "string" },
+          "default": []
         }
       }
     },
@@ -153,6 +159,12 @@
           "type": "string",
           "default": "결정",
           "description": "결정문을 적는 항목 이름. 이 항목의 링크만 지목 대상으로 본다."
+        },
+        "card_statuses": {
+          "type": "array",
+          "description": "카드를 가질 상태의 선언. 없으면 모든 결정이 카드를 가져야 한다. 항목은 상태 전체에 앵커된 정규식이고 대소문자를 가리지 않는다 — [\"accepted\", \"superseded by ADR-\\\\d{3}\"] 로 좁히면 그 밖의 상태(기각 등)는 카드가 없어야 하고, 있으면 decisions.card-unexpected 로 막는다.",
+          "items": { "type": "string" },
+          "minItems": 1
         }
       }
     }

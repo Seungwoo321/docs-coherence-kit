@@ -1,0 +1,6 @@
+{
+  "docs": {
+    "root": "routes",
+    "routes": ["issues"]
+  }
+}

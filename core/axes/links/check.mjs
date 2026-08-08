@@ -4,6 +4,7 @@
  *
  * 네 판정기:
  *   1. 내부 문서 링크   `links.dead-target`      — 매니페스트 id · 상대 경로 · 헤딩 앵커 실재
+ *                                                (docs.routes 로 선언된 사이트 화면은 대조 대상이 아니다)
  *   2. 절 번호 참조     `links.dead-section`     — `§N` 이 가리키는 절이 대상 문서에 실재
  *   3. 표시명 ↔ 대상    `links.display-mismatch` — 표시명이 대상의 제목·헤딩·정의 항목에 실재
  *   4. 표시명 일관성    `links.display-variant`  — 같은 앵커를 여러 이름으로 부르는 소수파
@@ -284,10 +285,10 @@ function splitTarget(target) {
 
 /**
  * 링크 하나를 해석한다.
- * kind: external | manifest-id | unverified-id | anchor | path | empty
+ * kind: external | manifest-id | unverified-id | route | anchor | path | empty
  * resolved 가 false 면 dead-target 후보다.
  */
-function resolveLink(link, document, index, manifest) {
+function resolveLink(link, document, index, manifest, routes) {
   const target = link.target.trim();
   if (!target) return { kind: 'empty', resolved: true, checkable: false };
   if (SCHEME_RE.test(target) || target.startsWith('//')) {
@@ -323,7 +324,12 @@ function resolveLink(link, document, index, manifest) {
     };
   }
 
-  // (2) 같은 문서 안 헤딩 앵커.
+  // (2) 사이트 해시 라우트 — docs.routes 로 선언된 이름. 문서가 아니라 화면이라 대조할 앵커가 없다.
+  if (!path && fragment && routes.has(decodeFragment(fragment))) {
+    return { kind: 'route', route: decodeFragment(fragment), resolved: true, checkable: false };
+  }
+
+  // (3) 같은 문서 안 헤딩 앵커.
   if (!path && fragment) {
     const anchor = slugify(decodeFragment(fragment));
     if (!document.anchors.has(anchor)) {
@@ -342,7 +348,7 @@ function resolveLink(link, document, index, manifest) {
 
   if (!path) return { kind: 'empty', resolved: true, checkable: false };
 
-  // (3) 상대 경로.
+  // (4) 상대 경로.
   const base = posix.dirname(document.path);
   const cleaned = path.startsWith('/') ? path.slice(1) : posix.join(base === '.' ? '' : base, path);
   const normalized = posix.normalize(cleaned);
@@ -770,6 +776,7 @@ export function runLinksAxis(context, { corpus: given } = {}) {
   const corpus = given ?? loadCorpus(context, { parse: true });
   const manifest = loadDocsManifest(context);
   const index = buildIndex(context, corpus, manifest);
+  const routes = new Set(context.config.docs.routes ?? []);
 
   const findings = [];
   const unverified = [];
@@ -796,7 +803,7 @@ export function runLinksAxis(context, { corpus: given } = {}) {
   for (const document of index.documents) {
     const resolvedLinks = document.parsed.links.map((link) => ({
       link,
-      resolution: resolveLink(link, document, index, manifest),
+      resolution: resolveLink(link, document, index, manifest, routes),
     }));
 
     checkDeadReferences(document, resolvedLinks, index, manifest, findings, unverified, unresolvedSections, externalSections);

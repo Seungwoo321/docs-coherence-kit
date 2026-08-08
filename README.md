@@ -133,6 +133,7 @@ node core/merge.mjs --config examples/bluebird-docs/dck.config.json --run-id dem
 | `docs.manifest` | 문서 매니페스트 파일. 링크 축이 내부 문서 id 집합을 여기서 얻는다 |
 | `docs.include` / `docs.exclude` | 검사 범위 글롭 (기본 `**/*.md`) |
 | `docs.frozen` | 소급 편집이 금지된 문서. 드리프트 검사에서 빠지되 링크 대상으로는 계속 해석된다. `exclude` 글롭과 겹치면 frozen 이 이긴다 |
+| `docs.routes` | 문서를 싣는 사이트의 해시 라우트 이름. `#issues` 처럼 같은 문서의 헤딩이 아니라 화면을 가리키는 링크를 선언하면 죽은 앵커로 보지 않는다 (`#<ns>/<id>` 는 매니페스트가 답하므로 적지 않는다) |
 | `out` | 산출 디렉토리 (기본 `.dck`) |
 | `ownership` | 무엇의 정본이 어느 문서인가 — `what` · `owner` · `hint` |
 | `numbers` | 산문 수치 마커 정규식, 교차 대조할 라벨, 합계 행으로 볼 라벨 |
@@ -143,6 +144,8 @@ node core/merge.mjs --config examples/bluebird-docs/dck.config.json --run-id dem
 | `plugins` | 붙일 플러그인 이름 |
 
 플러그인은 자기 이름의 최상위 키를 소유한다 (`adr` 플러그인 → `"adr": {...}`). 축의 `when.requires` 가 그 키를 가리키고, **키가 없으면 축은 사유와 함께 skipped 로 보고된다.** 형식 정본은 [`schemas/config.schema.json`](schemas/config.schema.json).
+
+`adr` 키가 받는 것: `bodies`(결정 본문 · 필수) · `cards`(카드 목록) · `id_pattern` · `status_field` · `decision_field` · `card_statuses`. 마지막 것은 **카드를 가질 상태**의 선언이다 — 기본은 모든 결정이 카드를 갖고, `["accepted", "superseded by ADR-\\d{3}"]` 로 좁히면 그 밖의 상태(기각 등)는 카드가 없어야 한다. 항목은 상태 전체에 앵커된 정규식이라 대체 대상 번호를 품는 상태도 한 줄로 적힌다. 어느 상태까지 카드로 싣는가는 레포의 규약이라 코드가 아니라 선언이 정한다.
 
 ## 실행
 

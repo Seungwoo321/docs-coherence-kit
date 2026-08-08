@@ -15,7 +15,9 @@ import { before, describe, test } from 'node:test';
 import { loadConfig, normalizeConfig } from '../core/lib/config.mjs';
 import { loadAxes } from '../core/lib/manifest.mjs';
 import { parseMarkdown } from '../core/lib/markdown.mjs';
+import { KIT_ROOT } from '../core/lib/manifest.mjs';
 import {
+  ADR_KEYS,
   POINTER_CODES,
   buildChain,
   parseAdrSettings,
@@ -443,6 +445,61 @@ describe('선언만으로 붙고 빠진다', () => {
   test('선언이 형식을 어기면 조용히 넘기지 않고 사유를 모아 throw 한다', () => {
     assert.throws(() => parseAdrSettings({ adr: {} }), /bodies/);
     assert.throws(() => parseAdrSettings({ adr: { bodies: 'x.md', id_pattern: '(' } }), /id_pattern/);
+    assert.throws(() => parseAdrSettings({ adr: { bodies: 'x.md', card_statuses: [] } }), /card_statuses/);
+    assert.throws(() => parseAdrSettings({ adr: { bodies: 'x.md', card_statuses: ['ok', ''] } }), /card_statuses/);
+    assert.throws(() => parseAdrSettings({ adr: { bodies: 'x.md', card_statuses: ['('] } }), /card_statuses/);
+  });
+
+  test('config 스키마의 adr 키가 플러그인이 받는 키와 같다', () => {
+    const schema = JSON.parse(readFileSync(resolve(KIT_ROOT, 'schemas/config.schema.json'), 'utf8'));
+    const adr = schema.properties.adr;
+    assert.deepEqual(Object.keys(adr.properties).sort(), [...ADR_KEYS].sort());
+    assert.deepEqual(adr.required, ['bodies']);
+  });
+});
+
+describe('카드를 가질 상태의 선언 (adr.card_statuses)', () => {
+  function runWith(cardStatuses) {
+    const context = loadConfig(CONFIG);
+    return runDecisionsAxis({ ...context, config: { ...context.config, adr: { ...context.config.adr, card_statuses: cardStatuses } } });
+  }
+
+  test('선언 밖 상태는 카드를 요구하지 않고, 카드가 있으면 그것이 결함이다', () => {
+    const result = runWith(['accepted']);
+    assert.deepEqual(
+      byCode(result, 'decisions.card-unexpected').map((finding) => finding.payload.decision_id),
+      ['ADR-003', 'ADR-005', 'ADR-006', 'ADR-009'],
+    );
+    assert.equal(byCode(result, 'decisions.card-unexpected')[0].locations[0].file, 'decisions.json');
+  });
+
+  test('선언 안 상태의 카드 누락은 그대로 잡는다', () => {
+    assert.deepEqual(
+      byCode(runWith(['accepted']), 'decisions.card-missing').map((finding) => finding.payload.decision_id),
+      ['ADR-010'],
+    );
+  });
+
+  test('항목은 정규식이라 대체 대상 번호를 품는 상태도 한 줄로 덮는다', () => {
+    const result = runWith(['accepted', 'superseded by ADR-\\d{3}']);
+    assert.deepEqual(byCode(result, 'decisions.card-unexpected'), []);
+    assert.deepEqual(
+      byCode(result, 'decisions.card-missing').map((finding) => finding.payload.decision_id),
+      ['ADR-010'],
+    );
+  });
+
+  test('상태 대조는 대소문자를 가리지 않는다', () => {
+    assert.deepEqual(runWith(['ACCEPTED', 'SUPERSEDED BY ADR-\\d{3}']).findings.filter((f) => f.code === 'decisions.card-unexpected'), []);
+  });
+
+  test('선언이 없으면 모든 상태가 카드를 갖는 종전 규칙이다', () => {
+    const result = runDecisionsAxis(loadConfig(CONFIG));
+    assert.deepEqual(byCode(result, 'decisions.card-unexpected'), []);
+    assert.deepEqual(
+      byCode(result, 'decisions.card-missing').map((finding) => finding.payload.decision_id),
+      ['ADR-010'],
+    );
   });
 });
 

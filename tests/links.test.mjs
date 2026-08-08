@@ -316,3 +316,12 @@ describe('links 축 — 크래시 계약', () => {
     );
   });
 });
+
+describe('links 축 — 사이트 해시 라우트', () => {
+  test('docs.routes 로 선언한 이름은 헤딩 앵커로 대조하지 않는다', () => {
+    const result = run('routes.config.json');
+    const dead = byCode(result, 'links.dead-target').map((finding) => finding.payload.target.raw);
+    assert.ok(!dead.includes('#issues'), '선언된 라우트는 죽은 링크가 아니다');
+    assert.deepEqual(dead, ['#board'], '선언되지 않은 해시는 그대로 죽은 링크다');
+  });
+});

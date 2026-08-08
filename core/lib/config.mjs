@@ -13,13 +13,14 @@ export const DEFAULTS = Object.freeze({
   include: ['**/*.md'],
   exclude: [],
   frozen: [],
+  routes: [],
   total_row_labels: ['합계', '총계', '계', 'total', 'Total'],
 });
 
 const KEY_RE = /^[a-z][a-z0-9]*(_[a-z0-9]+)*$/;
 
 /** docs 블록이 받는 키 — schemas/config.schema.json 의 docs.properties 와 같아야 한다. */
-export const DOCS_KEYS = ['root', 'manifest', 'include', 'exclude', 'frozen'];
+export const DOCS_KEYS = ['root', 'manifest', 'include', 'exclude', 'frozen', 'routes'];
 
 const KNOWN_KEYS = [
   '$schema',
@@ -99,6 +100,7 @@ export function validateConfig(raw) {
     checkStringArray(raw.docs.include, 'docs.include', problems);
     checkStringArray(raw.docs.exclude, 'docs.exclude', problems);
     checkStringArray(raw.docs.frozen, 'docs.frozen', problems);
+    checkStringArray(raw.docs.routes, 'docs.routes', problems);
     checkKnownKeys(raw.docs, DOCS_KEYS, 'docs', problems);
   }
 
@@ -185,6 +187,7 @@ export function normalizeConfig(raw, { source = '<memory>' } = {}) {
     include: config.docs.include ?? [...DEFAULTS.include],
     exclude: config.docs.exclude ?? [...DEFAULTS.exclude],
     frozen: config.docs.frozen ?? [...DEFAULTS.frozen],
+    routes: config.docs.routes ?? [...DEFAULTS.routes],
   };
   if (config.numbers) {
     config.numbers = {

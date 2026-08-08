@@ -8,7 +8,11 @@
  *        → decisions.target-out-of-scope. 검사하지 않은 자리가 통과로 읽히면 안 된다.
  *  - (d) supersede 체인: 상태의 `superseded by <번호>` 로 체인을 세우고, 대체된 결정을 여전히
  *        인용하는 줄을 후보로 넘긴다. 끊긴 체인(대상 없음·순환)은 그 자체가 결함이다.
- *  - 카드 대조: adr.cards 가 선언돼 있으면 본문 ↔ 카드의 상태·집합을 대조한다.
+ *  - 카드 대조: adr.cards 가 선언돼 있으면 본문 ↔ 카드의 상태·집합을 대조한다. 기본은 모든 결정이
+ *        카드를 갖는 것이고, adr.card_statuses 로 "카드를 가질 상태"를 좁히면 그 밖의 상태는
+ *        카드가 없어야 한다(있으면 decisions.card-unexpected). 카드를 어느 상태까지 싣는가는
+ *        레포의 규약이라 코드가 아니라 선언이 정한다. 항목은 상태 전체에 앵커된 정규식이다 —
+ *        `superseded by ADR-\d{3}` 처럼 대상 번호를 품는 상태가 실제로 쓰이기 때문이다.
  * 의미 판정 — (b) 결정↔본문 반영, (c) 소유 경계 역전, (d) 의 "여전히 따르는가" — 는
  * contract.md 가 소유한다. 이 스크립트는 그 입력이 될 candidates 만 만든다.
  *
@@ -39,7 +43,7 @@ export const ADR_DEFAULTS = Object.freeze({
   decision_field: '결정',
 });
 
-export const ADR_KEYS = ['bodies', 'cards', 'id_pattern', 'status_field', 'decision_field'];
+export const ADR_KEYS = ['bodies', 'cards', 'id_pattern', 'status_field', 'decision_field', 'card_statuses'];
 
 /** 동결 문서를 첫 자리로 가리켜도 되는 코드 — 헤더 주석의 (e) 예외. */
 export const POINTER_CODES = [
@@ -100,6 +104,26 @@ export function parseAdrSettings(config) {
     }
   }
 
+  const cardStatuses = raw.card_statuses;
+  let cardStatusPatterns = null;
+  if (cardStatuses !== undefined) {
+    if (!Array.isArray(cardStatuses) || cardStatuses.length === 0) {
+      problems.push('adr.card_statuses: 비어 있지 않은 문자열 배열이어야 한다');
+    } else if (cardStatuses.some((value) => typeof value !== 'string' || value.trim().length === 0)) {
+      problems.push('adr.card_statuses: 각 항목이 비어 있지 않은 문자열이어야 한다');
+    } else {
+      cardStatusPatterns = [];
+      for (const value of cardStatuses) {
+        const source = value.trim();
+        try {
+          cardStatusPatterns.push({ source, re: new RegExp(`^(?:${source})$`, 'i') });
+        } catch (error) {
+          problems.push(`adr.card_statuses: 정규식으로 컴파일되지 않는다 — ${source} (${error.message})`);
+        }
+      }
+    }
+  }
+
   const idPattern = raw.id_pattern ?? ADR_DEFAULTS.id_pattern;
   if (typeof idPattern === 'string') {
     try {
@@ -116,6 +140,7 @@ export function parseAdrSettings(config) {
     idPattern,
     statusField: raw.status_field ?? ADR_DEFAULTS.status_field,
     decisionField: raw.decision_field ?? ADR_DEFAULTS.decision_field,
+    cardStatuses: cardStatusPatterns,
   };
 }
 
@@ -775,6 +800,33 @@ export function runDecisionsAxis(context) {
 
     for (const decision of decisions) {
       const card = cards.get(decision.id);
+      // card_statuses 가 선언돼 있으면 카드를 가질 상태가 그 목록이다. 상태를 못 읽은 결정은
+      // 어느 쪽으로도 단정하지 않고 선언 이전 규칙(카드 필수)을 그대로 적용한다.
+      const cardExpected =
+        !settings.cardStatuses ||
+        !decision.status ||
+        settings.cardStatuses.some(({ re }) => re.test(decision.statusRaw ?? decision.status));
+      if (!cardExpected) {
+        if (card) {
+          emit({
+            severity: 'block',
+            code: 'decisions.card-unexpected',
+            message:
+              `${decision.id} 의 상태가 "${decision.statusRaw}" 인데 카드가 있다 — ` +
+              `adr.card_statuses 가 카드를 가질 상태로 ${settings.cardStatuses.map((p) => p.source).join(' · ')} 만 선언했다`,
+            locations: [{ file: cardsPath, ...(card.line ? { line: card.line } : {}), quote: decision.id }],
+            payload: {
+              decision_id: decision.id,
+              decision_summary: decision.title,
+              kind: 'card_unexpected',
+              body_status: decision.statusRaw,
+              card_status: card.status,
+              card_statuses: settings.cardStatuses.map((p) => p.source),
+            },
+          });
+        }
+        continue;
+      }
       if (!card) {
         emit({
           severity: 'block',
