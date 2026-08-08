@@ -233,20 +233,66 @@ describe('links 축 — 절 참조가 가리키는 문서 (회귀)', () => {
   });
 
   test('가리키는 문서를 밝히지 않은 절 참조는 자기 문서로 보되 block 이 아니라 warn 이다', () => {
-    const finding = at(result, 'links.dead-section', 'guide.md', 5);
-    assert.ok(finding, '"arc42 §10" — arc42 는 문서 집합에 없는 이름이다');
+    const finding = at(result, 'links.dead-section', 'guide.md', 7);
+    assert.ok(finding, '"부록 §10" — 부록 은 문서 집합에 없는 이름이다');
     assert.equal(finding.severity, 'warn');
     assert.equal(finding.payload.resolved_via, 'self');
     assert.match(finding.message, /자기 문서로 봤다/);
   });
 
-  test('앞 링크를 해석하지 못했으면 그 뒤 절은 자기 문서가 아니라 미검증이다', () => {
-    assert.equal(at(result, 'links.dead-section', 'guide.md', 7), undefined, '§4 를 guide.md 상대로 판정하지 않는다');
+  test('숫자를 품은 코퍼스 밖 이름 뒤의 절 참조는 외부 문서 인용이라 대조하지 않는다', () => {
+    assert.equal(at(result, 'links.dead-section', 'guide.md', 5), undefined, '"arc42 §10" 을 자기 문서 상대로 판정하지 않는다');
 
-    const unverified = at(result, 'links.unverified-section', 'guide.md', 7);
+    const [external] = byCode(result, 'links.external-section');
+    assert.ok(external);
+    assert.equal(external.severity, 'info');
+    assert.deepEqual(external.payload.names, ['arc42']);
+    assert.deepEqual(
+      external.locations.map((location) => [location.file, location.line]),
+      [['guide.md', 5]],
+    );
+  });
+
+  test('앞 링크를 해석하지 못했으면 그 뒤 절은 자기 문서가 아니라 미검증이다', () => {
+    assert.equal(at(result, 'links.dead-section', 'guide.md', 9), undefined, '§4 를 guide.md 상대로 판정하지 않는다');
+
+    const unverified = at(result, 'links.unverified-section', 'guide.md', 9);
     assert.ok(unverified);
     assert.equal(unverified.severity, 'info');
     assert.deepEqual(unverified.payload.targets, ['#doc/nowhere']);
+  });
+});
+
+describe('links 축 — 자기 문서 가정의 기각', () => {
+  test('자기 문서로 본 절 참조가 문서 전체에서 어긋나면 건별 경고 대신 가정 기각 하나로 접는다', () => {
+    const result = run('selfref.config.json');
+    assert.equal(byCode(result, 'links.dead-section').length, 0, '건별 경고를 내지 않는다');
+
+    const [discredited] = byCode(result, 'links.discredited-self');
+    assert.ok(discredited);
+    assert.equal(discredited.severity, 'info');
+    assert.equal(discredited.payload.self_hits, 1, '§1 은 실재해 가정이 맞았다');
+    assert.deepEqual(discredited.payload.sections, ['6', '7', '8']);
+    assert.deepEqual(
+      discredited.locations.map((location) => location.line),
+      [7, 9, 11],
+    );
+  });
+
+  test('어긋남이 소수면 가정이 유효해 건별 경고를 유지한다', () => {
+    const result = run('enum.config.json');
+    assert.equal(byCode(result, 'links.discredited-self').length, 0);
+    const selfMisses = byCode(result, 'links.dead-section').filter((f) => f.payload.resolved_via === 'self');
+    assert.equal(selfMisses.length, 1, '"부록 §10" 은 건별 warn 으로 남는다');
+    assert.equal(selfMisses[0].severity, 'warn');
+  });
+});
+
+describe('links 축 — 표 용어 색인', () => {
+  test('셀 전체가 굵은 글씨면 첫 열이 아니라도 표시명 후보다', () => {
+    const result = run('terms.config.json');
+    const lines = inFile(result, 'links.display-mismatch', 'guide.md').map((finding) => finding.locations[0].line);
+    assert.deepEqual(lines, [5], '굵은 둘째 열의 "블록"(3행)은 실재 항목이고, 굵지 않은 "슬롯"(5행)만 mismatch 다');
   });
 });
 

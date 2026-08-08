@@ -11,6 +11,11 @@
  * 전부 결정적이다. 네트워크를 타지 않으므로 외부 URL 은 검사 대상이 아니고,
  * fenced code block 과 코드스팬 안의 참조는 인용이지 링크가 아니라 보지 않는다.
  *
+ * §N 참조의 대상 추론은 세 갈래로 끝난다: 코퍼스 문서(대조한다) · 코퍼스 밖 이름
+ * ("arc42 §10" 같은 외부 표준 인용 — info 로만 남긴다) · 자기 문서(가정). 자기 문서
+ * 가정은 문서 단위로 결산해, 어긋남이 맞음보다 많고 문턱 이상이면 건별 경고 대신
+ * 가정 기각(info) 하나로 접는다 — 축이 자기 추측 위에 경고를 쌓지 않기 위해서다.
+ *
  * 동결 문서(config docs.frozen)는 3·4번(표시명 드리프트)에서 빠진다 — 소급 편집 금지 대상이라
  * 옛 표시명이 위반이 아니다. 1·2번(죽은 참조)은 동결 문서에도 적용하되 warn 으로만 보고한다:
  * 죽은 참조를 고치는 것은 표현을 바꾸는 소급 편집이 아니라 사실 정정이다.
@@ -38,6 +43,11 @@ const SECTION_GAP_RE = /^[\s의,([「]*$/u;
 const SECTION_ENUM_GAP_RE = /^[\s·,、/및와과]*$/u;
 /** 이름이 낱말 경계에서 끝나야 한다 — "마이크로아키텍처" 가 "아키텍처" 로 잡히면 안 된다. */
 const NAME_BOUNDARY_RE = /[\s([「"'·,:/|>]/u;
+/** 코퍼스 밖 이름 — §참조 바로 앞의, 숫자를 품은 라틴 토큰("arc42" · "42010" · "RFC 2119").
+ *  코퍼스의 어떤 문서명과도 붙지 않으면서 이 꼴이면 외부 표준·규격 인용이다. */
+const FOREIGN_NAME_RE = /([A-Za-z0-9][A-Za-z0-9.+/-]*)$/;
+/** 자기 문서 가정을 기각하는 문턱 — 한 문서에서 가정이 이만큼 어긋나면 참조가 아니라 가정이 틀렸다. */
+const SELF_DISCREDIT_MIN = 3;
 /** 줄머리 굵은 글씨 정의 항목 — "- **타일**: …". */
 const BOLD_TERM_RE = /^\s{0,3}(?:[-*+]|\d+[.)])?\s*\*\*([^*]+)\*\*/;
 
@@ -179,7 +189,15 @@ function collectDocumentNames(document, manifestEntry) {
     if (heading.section) add(heading.text.replace(SECTION_NUMBER_RE, ''));
   }
   for (const table of document.parsed.tables) {
-    for (const row of table.rows) add(row.cells[0]);
+    for (const row of table.rows) {
+      add(row.cells[0]);
+      // 첫 열 밖이라도 셀 전체가 굵은 글씨면 용어 선언이다 — "분류 | **커널** | 설명" 꼴의
+      // 용어집 표는 첫 열이 분류이고 용어가 둘째 열에 온다. 굵음이 곧 정의 항목 표식이라는
+      // 근거는 줄머리 정의 항목(BOLD_TERM_RE)과 같다.
+      for (const cell of row.cells.slice(1)) {
+        if (/^\*\*[^*]+\*\*$/.test(String(cell ?? '').trim())) add(cell);
+      }
+    }
   }
   document.parsed.lines.forEach((raw, index) => {
     if (isInsideFence(document.parsed, index + 1)) return;
@@ -409,6 +427,15 @@ function resolveSectionTarget(raw, line, matchIndex, document, resolvedLinks, in
     if (best) return { document: best.target, via: 'name', name: best.name };
   }
 
+  // 코퍼스의 어떤 이름과도 붙지 않는데 바로 앞이 숫자 품은 라틴 이름이면 외부 문서 인용이다
+  // ("arc42 §10" · "ISO 42010 §6.2"). 자기 문서로 대조하면 남의 절 번호를 이 문서에 없다고
+  // 지적하게 된다 — "대상을 모른다"는 "대상이 이 문서다"가 아니다.
+  const stripped = before.replace(/[\s의,([「'"]*$/u, '');
+  const foreign = FOREIGN_NAME_RE.exec(stripped);
+  if (foreign && /\d/.test(foreign[1])) {
+    return { document: null, via: 'external', name: foreign[1] };
+  }
+
   return { document, via: 'self' };
 }
 
@@ -427,7 +454,7 @@ function frozenNote(document) {
 }
 
 /** 판정기 1·2 — 죽은 참조. 동결 문서에도 적용하되 warn 으로 낮춘다. */
-function checkDeadReferences(document, resolvedLinks, index, manifest, findings, unverified, unresolvedSections) {
+function checkDeadReferences(document, resolvedLinks, index, manifest, findings, unverified, unresolvedSections, externalSections) {
   for (const { link, resolution } of resolvedLinks) {
     if (resolution.kind === 'unverified-id') {
       unverified.push({ document, link, id: resolution.id });
@@ -456,6 +483,9 @@ function checkDeadReferences(document, resolvedLinks, index, manifest, findings,
   const parsed = document.parsed;
   const headingByLine = new Map(parsed.headings.map((heading) => [heading.line, heading]));
 
+  // 자기 문서 가정의 장부 — 가정이 맞은 횟수와 어긋난 목록을 문서 단위로 센다.
+  const selfAssumption = { hits: 0, misses: [] };
+
   parsed.lines.forEach((raw, lineIndex) => {
     const line = lineIndex + 1;
     if (isInsideFence(parsed, line)) return;
@@ -479,10 +509,19 @@ function checkDeadReferences(document, resolvedLinks, index, manifest, findings,
       previous = { end, target };
       const targetDocument = target.document;
       if (!targetDocument) {
-        unresolvedSections.push({ document, line, section: match[1], target: target.target });
+        if (target.via === 'external') {
+          externalSections.push({ document, line, section: match[1], name: target.name });
+        } else {
+          unresolvedSections.push({ document, line, section: match[1], target: target.target });
+        }
         continue;
       }
-      if (findHeadingBySection(targetDocument.parsed, match[1])) continue;
+
+      const assumed = target.via === 'self';
+      if (findHeadingBySection(targetDocument.parsed, match[1])) {
+        if (assumed) selfAssumption.hits += 1;
+        continue;
+      }
 
       const available = targetDocument.parsed.headings
         .filter((item) => item.section)
@@ -490,17 +529,22 @@ function checkDeadReferences(document, resolvedLinks, index, manifest, findings,
 
       // 대상 문서를 본문이 명시한 경우(앞 링크·앞 문서명)만 차단급이다. 선행어가 없어 자기
       // 문서로 가정한 경우는 축이 추론한 전제라, 그 위에 차단을 걸면 게이트가 자기 추측으로
-      // 머지를 막는다 — 외부 표준 인용("arc42 §10")이 대표적이다. 보고는 하되 경고로 낮춘다.
-      const assumed = target.via === 'self';
+      // 머지를 막는다. 보고는 하되 경고로 낮추고, 문서 단위 장부에 먼저 쌓는다 — 가정이
+      // 문서 전체에서 어긋나면 건별 경고가 아니라 가정 자체를 기각해야 하기 때문이다.
+      if (assumed) {
+        selfAssumption.misses.push({ line, section: match[1], available });
+        continue;
+      }
+
       findings.push(
         createFinding({
           axis: AXIS,
-          severity: severityFor(document, assumed ? 'warn' : 'block'),
+          severity: severityFor(document, 'block'),
           code: 'links.dead-section',
           message:
             available.length === 0
-              ? `§${match[1]} 를 가리키지만 ${targetDocument.path} 에는 번호 절이 없다${assumed ? ' (가리키는 문서를 밝히지 않아 자기 문서로 봤다)' : ''}${frozenNote(document)}`
-              : `§${match[1]} 절이 ${targetDocument.path} 에 없다 (있는 절: ${available.join(' · ')})${assumed ? ' — 가리키는 문서를 밝히지 않아 자기 문서로 봤다' : ''}${frozenNote(document)}`,
+              ? `§${match[1]} 를 가리키지만 ${targetDocument.path} 에는 번호 절이 없다${frozenNote(document)}`
+              : `§${match[1]} 절이 ${targetDocument.path} 에 없다 (있는 절: ${available.join(' · ')})${frozenNote(document)}`,
           locations: [locationOf(document, line)],
           payload: {
             link_type: 'section',
@@ -522,6 +566,59 @@ function checkDeadReferences(document, resolvedLinks, index, manifest, findings,
     }
   });
 
+  // 자기 문서 가정의 결산. 어긋남이 문턱 이상이고 맞은 것보다 많으면 가정이 틀린 것이다 —
+  // 참조들이 사실은 코퍼스 밖 문서를 가리키는 문서다. 건별 경고 대신 가정 기각 하나로 접는다.
+  // 어긋남이 소수면 가정이 유효한 문서에서 난 진짜 오타이므로 건별 경고를 유지한다.
+  const { hits, misses } = selfAssumption;
+  if (misses.length >= SELF_DISCREDIT_MIN && misses.length > hits) {
+    findings.push(
+      createFinding({
+        axis: AXIS,
+        severity: 'info',
+        code: 'links.discredited-self',
+        message: `가리키는 문서를 밝히지 않아 자기 문서로 본 §참조 ${misses.length}건이 이 문서에 없다 (맞은 것 ${hits}건) — 자기 문서 가정이 성립하지 않아 대조하지 않았다`,
+        locations: misses.map((miss) => locationOf(document, miss.line)),
+        payload: {
+          link_type: 'section',
+          sections: misses.map((miss) => miss.section),
+          self_hits: hits,
+          target: { raw: '§N', resolved: false, reason: '자기 문서 가정이 이 문서에서 기각됐다' },
+          frozen: document.frozen,
+        },
+        severityCap: SEVERITY_CAP,
+      }),
+    );
+    return;
+  }
+
+  for (const miss of misses) {
+    findings.push(
+      createFinding({
+        axis: AXIS,
+        severity: severityFor(document, 'warn'),
+        code: 'links.dead-section',
+        message:
+          miss.available.length === 0
+            ? `§${miss.section} 를 가리키지만 ${document.path} 에는 번호 절이 없다 (가리키는 문서를 밝히지 않아 자기 문서로 봤다)${frozenNote(document)}`
+            : `§${miss.section} 절이 ${document.path} 에 없다 (있는 절: ${miss.available.join(' · ')}) — 가리키는 문서를 밝히지 않아 자기 문서로 봤다${frozenNote(document)}`,
+        locations: [locationOf(document, miss.line)],
+        payload: {
+          link_type: 'section',
+          section: miss.section,
+          resolved_via: 'self',
+          target: {
+            raw: `§${miss.section}`,
+            resolved: false,
+            file: document.path,
+            available_sections: miss.available,
+            reason: miss.available.length === 0 ? '대상 문서에 번호 절이 없다' : '그 번호의 절이 없다',
+          },
+          frozen: document.frozen,
+        },
+        severityCap: SEVERITY_CAP,
+      }),
+    );
+  }
 }
 
 /** 표시명이 검사 대상인가 — 이미지 alt·빈 표시명·경로 그대로 쓴 표시명은 이름이 아니다. */
@@ -675,6 +772,7 @@ export function runLinksAxis(context, { corpus: given } = {}) {
   const findings = [];
   const unverified = [];
   const unresolvedSections = [];
+  const externalSections = [];
 
   if (manifest.declared && manifest.error) {
     findings.push(
@@ -699,7 +797,7 @@ export function runLinksAxis(context, { corpus: given } = {}) {
       resolution: resolveLink(link, document, index, manifest),
     }));
 
-    checkDeadReferences(document, resolvedLinks, index, manifest, findings, unverified, unresolvedSections);
+    checkDeadReferences(document, resolvedLinks, index, manifest, findings, unverified, unresolvedSections, externalSections);
     if (document.frozen) continue;
 
     checkDisplayNames(document, resolvedLinks, findings);
@@ -733,6 +831,24 @@ export function runLinksAxis(context, { corpus: given } = {}) {
           link_type: 'manifest-id',
           ids: [...new Set(unverified.map((item) => item.id))].sort(),
           target: { raw: 'docs.manifest', resolved: false, reason: '문서 id 집합을 얻을 수 없다' },
+        },
+        severityCap: SEVERITY_CAP,
+      }),
+    );
+  }
+
+  if (externalSections.length) {
+    findings.push(
+      createFinding({
+        axis: AXIS,
+        severity: 'info',
+        code: 'links.external-section',
+        message: `코퍼스 밖 이름 뒤의 §N 참조 ${externalSections.length}건은 외부 문서 인용으로 보고 대조하지 않았다 (${[...new Set(externalSections.map((item) => item.name))].sort().join(' · ')})`,
+        locations: externalSections.map((item) => locationOf(item.document, item.line)),
+        payload: {
+          link_type: 'section',
+          names: [...new Set(externalSections.map((item) => item.name))].sort(),
+          target: { raw: '§N', resolved: false, reason: '코퍼스에 없는 외부 문서를 가리킨다' },
         },
         severityCap: SEVERITY_CAP,
       }),
