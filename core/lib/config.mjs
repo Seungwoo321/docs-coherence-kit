@@ -30,6 +30,7 @@ const KNOWN_KEYS = [
   'measurements',
   'concepts',
   'schemas',
+  'schemas_complete',
   'reuse_gates',
   'plugins',
 ];
@@ -155,6 +156,9 @@ export function validateConfig(raw) {
 
   checkStringArray(raw.concepts, 'concepts', problems);
   checkStringArray(raw.schemas, 'schemas', problems);
+  if (raw.schemas_complete !== undefined && typeof raw.schemas_complete !== 'boolean') {
+    problems.push('schemas_complete: 불리언이어야 한다');
+  }
   checkStringArray(raw.reuse_gates, 'reuse_gates', problems);
   checkStringArray(raw.plugins, 'plugins', problems);
 

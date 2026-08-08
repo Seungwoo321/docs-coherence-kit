@@ -30,6 +30,14 @@ describe('config 로더', () => {
     assert.ok(problems.some((p) => p === 'ownership[0].owner: 필수 항목이다'));
   });
 
+  it('schemas_complete 는 불리언만 받는다 — 닫힌 세계 선언은 명시적이어야 한다', () => {
+    assert.deepEqual(validateConfig({ docs: { root: 'docs' }, schemas_complete: true }), []);
+    assert.deepEqual(validateConfig({ docs: { root: 'docs' }, schemas_complete: false }), []);
+    assert.deepEqual(validateConfig({ docs: { root: 'docs' }, schemas_complete: 'yes' }), [
+      'schemas_complete: 불리언이어야 한다',
+    ]);
+  });
+
   it('컴파일되지 않는 marker_pattern 을 거절한다', () => {
     const problems = validateConfig({ docs: { root: 'docs' }, numbers: { marker_pattern: '([' } });
     assert.equal(problems.length, 1);

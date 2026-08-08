@@ -160,6 +160,57 @@ describe('(b) 필드명 실재 대조', () => {
   });
 });
 
+describe('(b′) 열린 세계 — schemas_complete 미선언', () => {
+  const open = { ...context, config: { ...context.config } };
+  delete open.config.schemas_complete;
+  const openResult = runConceptsAxis(open);
+
+  it('스키마 밖 필드명을 확정하지 않는다 — 닫힌 세계 가정은 선언으로만 성립한다', () => {
+    assert.equal(
+      openResult.findings.some((finding) => finding.code === 'concepts.ghost-field'),
+      false,
+    );
+  });
+
+  it('같은 대조 결과를 ghost-field 후보로 넘긴다 — 판단 계약이 실재를 확인한다', () => {
+    const demoted = openResult.candidates.filter((candidate) => candidate.kind === 'ghost-field');
+    assert.equal(demoted.length, 1);
+
+    const [candidate] = demoted;
+    assert.equal(candidate.name, 'usedBy');
+    assert.deepEqual(candidate.candidates, ['usedByBlocks', 'usedByTiles']);
+    assert.equal(candidate.canonical_name, null);
+    assert.deepEqual(candidate.locations, [
+      { file: 'ownership-rationale.md', line: 3, quote: '조각이 어디서 쓰이는지는 `usedBy` 로 확인한다.' },
+    ]);
+    assert.match(candidate.misreading, /usedByBlocks/);
+    assert.match(candidate.why, /열린 세계/);
+  });
+
+  it('강등된 이름은 유령 후보로 이중 보고되지 않는다', () => {
+    assert.equal(
+      openResult.candidates.some(
+        (candidate) => candidate.kind === 'ghost' && candidate.name === 'usedBy',
+      ),
+      false,
+    );
+  });
+
+  it('닫힌·열린 세계가 stats.field_check.closed_world 로 구분된다', () => {
+    assert.equal(openResult.stats.field_check.closed_world, false);
+    assert.equal(result.stats.field_check.closed_world, true);
+  });
+
+  it('스키마를 못 읽는 것은 열린 세계에서도 차단이다 — 대조 자체가 불가능하다', () => {
+    const broken = { ...open, config: { ...open.config, schemas: ['schema/does-not-exist.json'] } };
+    const crashed = runConceptsAxis(broken);
+    assert.equal(
+      crashed.findings.filter((f) => f.code === 'concepts.schema-unreadable').length,
+      1,
+    );
+  });
+});
+
 describe('(d) 코드블록 제외', () => {
   it('fenced code block 안의 식별자는 세지 않는다', () => {
     // 픽스처의 phase-notes.md 는 fenced block 안에서만 이 이름을 쓴다.
@@ -240,11 +291,17 @@ describe('판단 계약 문서', () => {
     assert.match(contract, /모든 위치를 빠짐없이 나열한다/);
   });
 
-  it('네 가지 kind 와 misreading 필수를 규정한다', () => {
-    for (const kind of ['alias', 'overload', 'boundary', 'ghost']) {
+  it('다섯 가지 kind 와 misreading 필수를 규정한다', () => {
+    for (const kind of ['alias', 'overload', 'boundary', 'ghost', 'ghost-field']) {
       assert.match(contract, new RegExp(`\`${kind}\``));
     }
     assert.match(contract, /`payload\.misreading` 은 모든 finding 에 필수다/);
+  });
+
+  it('열린 세계의 ghost-field 확정 기준을 규정한다', () => {
+    assert.match(contract, /### 5\. 스키마 밖 필드명 확정 \(ghost-field\)/);
+    assert.match(contract, /schemas_complete/);
+    assert.match(contract, /### 6\. 별칭 \(alias\)/);
   });
 
   it('반드시 지킬 것 4항을 담는다', () => {

@@ -25,6 +25,7 @@
   ],
   "concepts": ["타일", "기능블록", "배포단위", "호스트", "widgets-shared"],
   "schemas": ["schema/tile.schema.json"],
+  "schemas_complete": true,
   "plugins": ["adr"],
   "adr": {
     "bodies": "decisions/accepted.md",

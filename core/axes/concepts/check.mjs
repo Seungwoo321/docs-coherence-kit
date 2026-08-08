@@ -6,7 +6,10 @@
  * 판단 계약(contract.md)이 확정한다.
  *
  *   (a) 유령 식별자 → candidates. 소수 표기가 유령인지 정당한 별개 이름인지는 의미 판단이다.
- *   (b) 필드명 실재 대조 → findings. 스키마에 없는 필드명은 문맥과 무관하게 사실로 틀렸다.
+ *   (b) 필드명 실재 대조 → config.schemas_complete 가 true 일 때만 findings. "스키마에 없다 =
+ *       틀렸다"는 schemas[] 가 전집이라는 닫힌 세계 가정 위에서만 사실이다. 그 가정은 스크립트가
+ *       검증할 수 없으므로 사용자 선언(schemas_complete)으로만 성립하고, 선언이 없으면(열린 세계,
+ *       기본) 같은 대조 결과를 candidates(kind: ghost-field) 로 넘겨 판단 계약이 실재를 확인한다.
  *
  * 판단 계약이 재탐색 없이 일할 수 있도록 추적 개념(config.concepts)의 등장 위치도
  * candidates 로 함께 싣는다 — 판단 계약은 문서를 스스로 다시 훑지 않는 것이 규율이고,
@@ -320,7 +323,23 @@ export function runConceptsAxis(context, { severityCap } = {}) {
   const index = collectIdentifiers(corpus.documents);
   const { fields, unreadable, declared } = loadSchemaFields(context);
 
-  const findings = ghostFieldFindings(index, fields, { severityCap });
+  // 닫힌 세계(schemas_complete: true)에서만 확정 차단. 열린 세계에서는 같은 대조 결과를
+  // 후보로 강등한다 — 생산자(스크립트)가 검증 못 하는 가정을 확정의 근거로 쓰지 않는다.
+  const closedWorld = context.config.schemas_complete === true;
+  const fieldFindings = ghostFieldFindings(index, fields, { severityCap });
+  const findings = closedWorld ? fieldFindings : [];
+  const demoted = closedWorld
+    ? []
+    : fieldFindings.map((finding) => ({
+        kind: 'ghost-field',
+        name: finding.payload.concept,
+        occurrences: finding.locations.length,
+        locations: finding.locations,
+        canonical_name: finding.payload.canonical_name,
+        candidates: finding.payload.candidates,
+        misreading: finding.payload.misreading,
+        why: `스키마에 없는 필드명이지만 schemas_complete 미선언(열린 세계)이라 실재 확인이 필요하다.`,
+      }));
 
   for (const entry of unreadable) {
     findings.push(
@@ -336,11 +355,12 @@ export function runConceptsAxis(context, { severityCap } = {}) {
     );
   }
 
-  // 이미 확정된 이름은 후보로 다시 내보내지 않는다 — 판단 계약이 결론 난 것을 재판정하면
-  // 같은 사실이 findings 와 verdict 양쪽에서 두 번 보고된다.
-  const confirmed = new Set(findings.map((finding) => finding.payload?.concept).filter(Boolean));
+  // 필드 대조가 이름을 이미 다뤘으면(확정이든 강등 후보든) 유령 후보로 다시 내보내지 않는다 —
+  // 같은 이름을 두 경로로 이중 보고하면 판단 계약이 같은 사실을 두 번 판정한다.
+  const fieldNamed = new Set(fieldFindings.map((finding) => finding.payload?.concept).filter(Boolean));
   const candidates = [
-    ...ghostCandidates(index).filter((candidate) => !confirmed.has(candidate.name)),
+    ...ghostCandidates(index).filter((candidate) => !fieldNamed.has(candidate.name)),
+    ...demoted,
     ...conceptMentions(corpus.documents, context.config.concepts),
   ];
 
@@ -356,7 +376,7 @@ export function runConceptsAxis(context, { severityCap } = {}) {
   // 필드 대조는 아무것도 보장하지 못하며, 그 사실이 0건과 구분돼야 한다.
   result.stats.identifiers_indexed = index.size;
   result.stats.field_check = declared
-    ? { ran: true, schemas: context.config.schemas.length, fields: fields.size }
+    ? { ran: true, schemas: context.config.schemas.length, fields: fields.size, closed_world: closedWorld }
     : { ran: false, reason: 'config.schemas 미선언 — 대조할 스키마가 없다' };
 
   return result;

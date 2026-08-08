@@ -117,6 +117,11 @@
       "description": "concepts 축의 필드명 실재 대조에 쓰는 스키마 파일.",
       "items": { "type": "string" }
     },
+    "schemas_complete": {
+      "type": "boolean",
+      "description": "schemas[] 가 문서가 언급하는 필드의 전집임을 선언한다(닫힌 세계). true 면 스키마 밖 필드명을 결정적으로 차단하고, 없거나 false 면(열린 세계, 기본) 판단 계약이 실재를 확인할 후보로 넘긴다.",
+      "default": false
+    },
     "reuse_gates": {
       "type": "array",
       "description": "이미 존재하는 결정적 검사. 재구현하지 않고 호출한다.",

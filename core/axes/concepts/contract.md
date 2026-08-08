@@ -1,8 +1,8 @@
 # 개념·용어
 
 같은 개념을 다른 이름으로 부르거나(경증), 같은 이름이 다른 뜻으로 쓰이는 곳(중증)을 판정한다.
-결정적으로 잡히는 것(스키마에 없는 필드명)은 이미 `check.mjs` 가 findings 로 냈다.
-너는 문맥을 읽어야만 갈리는 것만 판정한다.
+결정적으로 잡히는 것(닫힌 세계 선언 `schemas_complete: true` 아래의 스키마 밖 필드명)은 이미
+`check.mjs` 가 findings 로 냈다. 너는 문맥을 읽어야만 갈리는 것만 판정한다.
 
 ## 입력
 
@@ -13,9 +13,11 @@
 | 스크립트 후보 | 스캔 산출의 `candidates[]` (오케스트레이터가 경로를 준다) |
 | 검사 대상 문서 | `docs.root` 아래, 스캔 산출 `stats.excluded` 에 없는 파일 |
 
-`candidates[]` 는 두 종류다.
+`candidates[]` 는 세 종류다.
 
 - `kind: "ghost"` — 소수 표기 식별자 + 압도적 다수의 유사 이름. `dominant` 가 정본 후보다.
+- `kind: "ghost-field"` — 스키마에 없으면서 스키마 필드와 근사한 필드명. `schemas_complete`
+  미선언(열린 세계)이라 스크립트가 확정하지 못하고 넘긴 것이다. `candidates` 가 정본 후보다.
 - `kind: "concept-usage"` — 추적 개념이 등장한 모든 줄. **이미 전 문서를 훑은 결과다.**
 
 ## 판정 기준
@@ -79,7 +81,20 @@
 
 확정하면 `severity: "block"` 이다. 실재하지 않는 이름이 산출물로 흘러가면 dangling 게이트에 걸린다.
 
-### 5. 별칭 (alias)
+### 5. 스키마 밖 필드명 확정 (ghost-field)
+
+`kind: "ghost-field"` 후보를 확정하거나 기각한다. 후보는 "선언된 스키마에 없다"만 본 것이라,
+열린 세계에서는 스키마 밖에 실재하는 이름일 수 있다.
+
+| 조건 | 판정 |
+|---|---|
+| 그 이름이 다른 실재 산출물(다른 스키마·정본 문서의 정의)에 있다 | 기각 (보고하지 않는다) |
+| 실재 근거가 어디에도 없고 `candidates` 의 정본과 같은 것을 가리킨다 | `ghost-field` 위반 — `severity: "block"` |
+| 실재 여부를 문맥으로 가릴 수 없다 | `severity: "warn"` — 확인 못 한 이유를 적는다 |
+
+확정 시 `payload.canonical_name` 과 `payload.misreading` 은 후보에 실린 값을 그대로 쓸 수 있다.
+
+### 6. 별칭 (alias)
 
 같은 개념을 두 이름으로 부르는데 둘 다 실재하는 경우. 위 4와 달리 어느 쪽도 유령이 아니다.
 정본을 하나 고르고 나머지를 `variants` 로 나열한다. 문서 스스로 한 이름을 부정하고 있으면
@@ -95,7 +110,8 @@
 2. **집합 성격** — 대상은 마크다운 문서와 JSON 스키마뿐이고 실행 코드는 없다.
    런타임 버그·성능·보안을 찾지 마라. 찾을 것은 문서 사이의 의미 불일치 하나다.
 3. **기계 생성 파일 금독** — 스캔 산출(`scan.json`)·매니페스트·재빌드 산출물은 내용을 읽지 않는다.
-   `config.schemas[]` 의 스키마 파일은 예외다 — 판정 기준 2의 3단계가 그 실재를 근거로 삼는다.
+   `config.schemas[]` 의 스키마 파일은 예외다 — 판정 기준 2의 3단계와 판정 기준 5의 실재 확인이
+   그 실재를 근거로 삼는다.
 4. **작업 트리 쓰기 금지** — 문서를 고치지 마라. 오케스트레이터가 지정한 verdict 파일
    하나만 쓴다. 그 밖의 파일 생성·수정·삭제는 금지다.
 
@@ -123,8 +139,8 @@ verdict 파일에 findings 봉투 배열 하나만 쓴다. 경로는 오케스�
 ```
 
 - `code` 는 `concepts.overload` · `concepts.boundary` · `concepts.ghost` · `concepts.alias` 중 하나.
-  `concepts.ghost-field` 는 스크립트가 쓰는 코드라 여기서 쓰지 않는다.
-- `payload.kind` 는 `alias` · `overload` · `boundary` · `ghost` 중 하나이며 `code` 와 일치해야 한다.
+  `concepts.ghost-field` 는 판정 기준 5의 확정에만 쓴다 — 닫힌 세계에서는 스크립트가 쓰는 코드다.
+- `payload.kind` 는 `alias` · `overload` · `boundary` · `ghost` · `ghost-field` 중 하나이며 `code` 와 일치해야 한다.
 - **`payload.misreading` 은 모든 finding 에 필수다.** "무엇이 다르다"가 아니라 "그래서 무엇을
   잘못 읽게 되는가"를 적는다. 이걸 못 쓰겠으면 그 불일치는 보고하지 않는다.
 - `locations` 는 갈린 곳 전부다. 정본 문서의 위치도 첫 항목 뒤에 함께 싣는다.
