@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-08
+
 ### Added
 
 - `schemas_complete` config 키 — `schemas[]` 가 필드 전집이라는 닫힌 세계 선언. `true` 일 때만 links 축과 별개로 concepts 축이 스키마 밖 필드명을 결정적으로 차단한다
@@ -41,5 +43,6 @@
 - 자기완결 SVG 로고 (`assets/`) — 외부 폰트·이미지 참조 없이 라이트/다크에 대응한다
 - 합성 픽스처 기반 `node:test` 스위트 (`tests/`)
 
-[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Seungwoo321/docs-coherence-kit/releases/tag/v1.0.0
