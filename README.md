@@ -127,6 +127,7 @@ node core/merge.mjs --config examples/bluebird-docs/dck.config.json --run-id dem
 | `measurements` | 문서 수치를 실측 명령에 묶는다. stdout 마지막 줄이 실측값 |
 | `concepts` | 표기가 갈리면 안 되는 개념 |
 | `schemas` | 개념 축이 필드명의 정본으로 읽는 스키마 파일 |
+| `schemas_complete` | `schemas` 가 문서가 언급하는 필드의 전집이라는 선언(닫힌 세계). `true` 면 스키마 밖 필드명을 결정적으로 차단하고, 없으면(기본) 판정 단계가 실재를 확인할 후보로 넘긴다 |
 | `plugins` | 붙일 플러그인 이름 |
 
 플러그인은 자기 이름의 최상위 키를 소유한다 (`adr` 플러그인 → `"adr": {...}`). 축의 `when.requires` 가 그 키를 가리키고, **키가 없으면 축은 사유와 함께 skipped 로 보고된다.** 형식 정본은 [`schemas/config.schema.json`](schemas/config.schema.json).

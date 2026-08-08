@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- `schemas_complete` config 키 — `schemas[]` 가 필드 전집이라는 닫힌 세계 선언. `true` 일 때만 links 축과 별개로 concepts 축이 스키마 밖 필드명을 결정적으로 차단한다
+- links 축 외부 문서 인용 인식 — 숫자를 품은 코퍼스 밖 이름 뒤의 `§N` 참조(예: `arc42 §10`)는 자기 문서 가정 대신 외부 인용으로 분류하고 `links.external-section` info 로 보고한다
+- links 축 자기 문서 가정의 기각(`links.discredited-self`) — 문서를 밝히지 않은 `§N` 참조의 어긋남이 3건 이상이고 맞은 것보다 많으면, 건별 경고 대신 가정 자체가 성립하지 않는다는 info 하나로 접는다
+- links 축 표 용어 색인 확장 — 첫 칸이 아니어도 셀 전체가 굵은 글씨(`**용어**`)인 셀을 용어 선언으로 색인한다
+
+### Changed
+
+- concepts 축 스키마 밖 필드명(`concepts.ghost-field`)의 기본 동작 — `schemas_complete` 미선언(열린 세계)이면 확정 차단 대신 판정 계약이 실재를 확인하는 `ghost-field` 후보로 강등된다. 기존의 결정적 차단을 유지하려면 config 에 `"schemas_complete": true` 를 선언한다
+
 ## [1.0.0] - 2026-08-08
 
 첫 공개 배포.
