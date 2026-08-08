@@ -3,7 +3,8 @@
  *
  * 후보 집합 = docs.root 아래의 모든 마크다운 파일. 거기서 빠진 것은 전부 사유와 함께
  * excluded 로 남는다 — 검사하지 않은 문서가 통과로 읽히면 안 된다.
- * frozen 문서는 검사 대상에서는 빠지되 링크 대상 해석용으로 함께 로드된다.
+ * frozen 문서는 검사 대상에서는 빠지되 링크 대상 해석용으로 함께 로드된다. frozen 선언은
+ * exclude 글롭보다 우선한다 — 겹치면 동결(로드됨)이지 제외(안 보임)가 아니다.
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -202,13 +203,17 @@ export function loadCorpus(context, { parse = false, skipDirs = DEFAULT_SKIP_DIR
       excluded.push({ path: candidate.path, reason: `include 글롭에 걸리지 않음 (${include.join(' · ')})` });
       continue;
     }
-    const excludedBy = matchingGlob(candidate.path, exclude);
-    if (excludedBy) {
-      excluded.push({ path: candidate.path, reason: `exclude 글롭 "${excludedBy}" 에 걸림` });
-      continue;
+    // frozen 이 exclude 보다 먼저다 — 문서를 집어 동결한 선언이 광역 제외 글롭에 조용히 지워지면
+    // 그 문서는 링크 대상 해석에서도 사라져, 사용자가 명시한 선언이 아무 신호 없이 무효가 된다.
+    const frozenBy = matchingGlob(candidate.path, frozen);
+    if (!frozenBy) {
+      const excludedBy = matchingGlob(candidate.path, exclude);
+      if (excludedBy) {
+        excluded.push({ path: candidate.path, reason: `exclude 글롭 "${excludedBy}" 에 걸림` });
+        continue;
+      }
     }
 
-    const frozenBy = matchingGlob(candidate.path, frozen);
     let document;
     try {
       document = read(candidate);

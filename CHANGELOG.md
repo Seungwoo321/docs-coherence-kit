@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-08-08
+
+### Fixed
+
+- frozen 선언이 exclude 글롭보다 우선한다 — 겹치면 문서가 동결(링크 대상으로 로드)이지 제외가 아니다. 이전에는 exclude 판정이 먼저라, 제외 디렉토리 안의 파일을 집어 동결한 명시 선언이 아무 신호 없이 무효가 됐다
+
 ## [1.2.0] - 2026-08-08
 
 ### Added
@@ -55,7 +61,8 @@
 - 자기완결 SVG 로고 (`assets/`) — 외부 폰트·이미지 참조 없이 라이트/다크에 대응한다
 - 합성 픽스처 기반 `node:test` 스위트 (`tests/`)
 
-[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Seungwoo321/docs-coherence-kit/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Seungwoo321/docs-coherence-kit/releases/tag/v1.0.0

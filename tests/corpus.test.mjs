@@ -50,7 +50,7 @@ describe('corpus 로드', () => {
   it('검사 범위에서 빠진 항목은 무엇을 왜 뺐는지 함께 남는다', () => {
     assert.deepEqual(
       corpus.excluded.map((entry) => entry.path),
-      ['decisions/accepted.md', 'drafts/idea.markdown', 'notes/scratch.md', 'vendor'],
+      ['decisions/accepted.md', 'drafts/idea.markdown', 'notes/pinned.md', 'notes/scratch.md', 'vendor'],
     );
     assert.ok(corpus.excluded.every((entry) => typeof entry.reason === 'string' && entry.reason.length > 0));
 
@@ -68,17 +68,27 @@ describe('corpus 로드', () => {
 
   it('동결 문서는 검사 대상에서 빠지되 링크 대상 해석용으로 함께 로드된다', () => {
     assert.deepEqual(
-      corpus.frozen.map((doc) => doc.path),
-      ['decisions/accepted.md'],
+      corpus.frozen.map((doc) => doc.path).sort((a, b) => a.localeCompare(b)),
+      ['decisions/accepted.md', 'notes/pinned.md'],
     );
-    assert.equal(corpus.frozen[0].frozen, true);
-    assert.equal(corpus.frozen[0].frozenBy, 'decisions/accepted.md');
-    assert.match(corpus.frozen[0].text, /채택된 결정/);
+    const accepted = corpus.frozen.find((doc) => doc.path === 'decisions/accepted.md');
+    assert.equal(accepted.frozen, true);
+    assert.equal(accepted.frozenBy, 'decisions/accepted.md');
+    assert.match(accepted.text, /채택된 결정/);
 
     assert.deepEqual(
       allDocuments(corpus).map((doc) => doc.path),
-      ['decisions/accepted.md', 'glossary.md', 'scope-table.md'],
+      ['decisions/accepted.md', 'glossary.md', 'notes/pinned.md', 'scope-table.md'],
     );
+  });
+
+  it('frozen 선언은 exclude 글롭보다 우선한다 — 집어 동결한 파일이 광역 제외에 지워지지 않는다', () => {
+    const pinned = corpus.frozen.find((doc) => doc.path === 'notes/pinned.md');
+    assert.ok(pinned, 'notes/pinned.md 가 frozen 으로 로드돼야 한다');
+    assert.equal(pinned.frozenBy, 'notes/pinned.md');
+    assert.match(reasonFor('notes/pinned.md'), /frozen "notes\/pinned\.md"/);
+    // 겹치지 않는 이웃은 여전히 exclude 사유로 남는다 — 우선순위가 제외 선언 자체를 무너뜨리지 않는다.
+    assert.match(reasonFor('notes/scratch.md'), /exclude 글롭 "notes\/\*\*"/);
   });
 
   it('제외 목록은 경로순으로 안정 정렬된다', () => {

@@ -4,7 +4,7 @@
     "manifest": "docs/index.json",
     "include": ["**/*.md"],
     "exclude": ["notes/**"],
-    "frozen": ["decisions/accepted.md"]
+    "frozen": ["decisions/accepted.md", "notes/pinned.md"]
   },
   "ownership": [
     { "what": "용어 정의", "owner": "glossary.md" },
